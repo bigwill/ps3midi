@@ -1,5 +1,10 @@
 from ctypes import *
 
+libc = CDLL("libSystem.dylib")
+
+libc.memcmp.argtypes = [c_void_p, c_void_p, c_int]
+libc.memcmp.restype = c_int
+
 class PS3State(Structure):
     _fields_ = [("hid_channel", c_ubyte),
                 ("unknown1", c_ubyte),
@@ -10,7 +15,18 @@ class PS3State(Structure):
                 ("right_analog_horiz", c_ubyte),
                 ("right_analog_vert", c_ubyte),
                 ("unknown_axes", c_ubyte*4),
-                ("button_pressures", c_ubyte*12),
+                ("up_pressure", c_ubyte),
+                ("right_pressure", c_ubyte),
+                ("down_pressure", c_ubyte),
+                ("left_pressure", c_ubyte),
+                ("l2_pressure", c_ubyte),
+                ("r2_pressure", c_ubyte),
+                ("l1_pressure", c_ubyte),
+                ("r1_pressure", c_ubyte),
+                ("triangle_pressure", c_ubyte),
+                ("circle_pressure", c_ubyte),
+                ("ex_pressure", c_ubyte),
+                ("square_pressure", c_ubyte),
                 ("unknown3", c_ubyte*3),
                 ("status", c_ubyte),
                 ("power_rating", c_ubyte),
@@ -19,7 +35,27 @@ class PS3State(Structure):
                 ("accelerator", c_ubyte*6),
                 ("z_gyro", c_ubyte*2),
                 ]
-                 
+
+    def dump(self):
+        for f in s._fields_:
+            v = s.__getattribute__(f[0])
+            if isinstance(v, int):
+                d = '%02x' % v
+            else: # byte array
+                d = ''.join('%02x' % b for b in v)
+            print '%18s = %24s' % (f[0], d)
+
+    def diff(self, other):
+        for f in self._fields_:
+            fname = f[0]
+            v = self.__getattribute__(fname)
+            vp = other.__getattribute__(fname)
+            if isinstance(v, int):
+                if v != vp:
+                    yield (fname, v, vp)
+            elif libc.memcmp(v, vp, sizeof(v)) != 0:
+                yield (fname, v, vp)
+
 hid = CDLL("libHid.A.dylib")
 
 hid.hid_open.restype = c_void_p
