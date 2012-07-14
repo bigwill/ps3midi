@@ -20,21 +20,32 @@ class PS3State(Structure):
                 ("z_gyro", c_ubyte*2),
                 ]
                  
-ps3 = CDLL("libPS3hid.A.dylib")
+hid = CDLL("libHid.A.dylib")
 
-ps3.ps3_open.restype = c_void_p
+hid.hid_open.restype = c_void_p
 
-ps3.ps3_close.argtypes = [c_void_p]
+hid.hid_close.argtypes = [c_void_p]
 
-ps3.ps3_read.argtypes = [c_void_p, c_char_p]
-ps3.ps3_read.restype =  c_int
+hid.hid_read.argtypes = [c_void_p, c_void_p, c_int]
+hid.hid_read.restype = c_int
 
-open = ps3.ps3_open
-close = ps3.ps3_close
+hid.hid_write.argtypes = [c_void_p, c_void_p, c_int]
+hid.hid_write.restype = c_int
 
+def open():
+    return hid.hid_open(0x54c, 0x0268, 0);
+
+def close(h):
+    hid.hid_close(h)
+
+req_state_buf = create_string_buffer('\x01\x81', 17)
 def read(h):
+    r = hid.hid_write(h, req_state_buf, sizeof(req_state_buf))
+    if r < 0:
+        return None
+
     s = PS3State()
-    r = ps3.ps3_read(h, cast(byref(s), c_char_p))
+    r = hid.hid_read(h, cast(byref(s), c_char_p), sizeof(PS3State))
     if r > 0:
         assert r == sizeof(PS3State), 'Received payload of unexpected size: %d' % r
         return s
