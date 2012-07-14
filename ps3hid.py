@@ -37,8 +37,8 @@ class PS3State(Structure):
                 ]
 
     def dump(self):
-        for f in s._fields_:
-            v = s.__getattribute__(f[0])
+        for f in self._fields_:
+            v = self.__getattribute__(f[0])
             if isinstance(v, int):
                 d = '%02x' % v
             else: # byte array
