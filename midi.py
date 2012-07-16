@@ -24,7 +24,7 @@ def note_off(chan, note, vel):
 def note_on(chan, note, vel):
     return _kv_base(144, chan, note, vel)
 
-def key_aftertouch(chan, note, pressure):
+def note_aftertouch(chan, note, pressure):
     return _kv_base(160, chan, note, pressure)
 
 def control_change(chan, ctlr, val):
