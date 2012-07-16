@@ -78,9 +78,6 @@ class PS3State(Structure):
     def diff(self, other):
         for f in self._fields_:
             fname = f[0]
-            if fname == 'accelerator' or fname.find("analog") != -1:
-                continue
-
             v = self.__getattribute__(fname)
             vp = other.__getattribute__(fname)
             if isinstance(v, int):
