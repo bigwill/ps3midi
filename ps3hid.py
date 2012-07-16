@@ -1,4 +1,5 @@
 from ctypes import *
+from itertools import izip
 
 libc = CDLL("libSystem.dylib")
 
@@ -6,6 +7,32 @@ libc.memcmp.argtypes = [c_void_p, c_void_p, c_int]
 libc.memcmp.restype = c_int
 
 class PS3State(Structure):
+    BUTTONS = ["left",
+               "down",
+               "right",
+               "up",
+               "start",
+               "right_hat",
+               "left_hat",
+               "select",
+               "square",
+               "ex",
+               "circle",
+               "triange",
+               "r1",
+               "l1",
+               "r2",
+               "l2",
+               "blank",
+               "blank",
+               "blank",
+               "blank",
+               "blank",
+               "blank",
+               "blank",
+               "ps"
+               ]
+
     _fields_ = [("hid_channel", c_ubyte),
                 ("unknown1", c_ubyte),
                 ("button_states", c_ubyte*3),
@@ -45,16 +72,31 @@ class PS3State(Structure):
                 d = ''.join('%02x' % b for b in v)
             print '%18s = %24s' % (f[0], d)
 
+    def _unpack_button_states(self, button_states):
+        return [int(d) for d in ''.join([bin(256+byte)[3:] for byte in button_states])]
+
     def diff(self, other):
         for f in self._fields_:
             fname = f[0]
+            if fname == 'accelerator' or fname.find("analog") != -1:
+                continue
+
             v = self.__getattribute__(fname)
             vp = other.__getattribute__(fname)
             if isinstance(v, int):
                 if v != vp:
                     yield (fname, v, vp)
             elif libc.memcmp(v, vp, sizeof(v)) != 0:
-                yield (fname, v, vp)
+                if fname == "button_states":
+                    bs = self._unpack_button_states(v)
+                    bps = self._unpack_button_states(vp)
+                    for (button, b, bp) in izip(self.BUTTONS, bs, bps):
+                        if button == "blank":
+                            continue
+                        if b != bp:
+                            yield (button, b, bp)
+                else:
+                    yield (fname, v, vp)
 
 hid = CDLL("libHid.A.dylib")
 
