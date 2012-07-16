@@ -27,8 +27,8 @@ def note_on(chan, note, vel):
 def key_aftertouch(chan, note, pressure):
     return kv_base(160, chan, note, pressure)
 
-def control_change(chan, note, val):
-    return kv_base(176, chan, note, val)
+def control_change(chan, ctlr, val):
+    return kv_base(176, chan, ctlr, val)
 
 def prog_change(chan, prog):
     assert_range(chan, 0, 127)
