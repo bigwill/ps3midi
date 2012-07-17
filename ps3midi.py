@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import cProfile
 import coremidi as cm
 import midi as m
 import sys
@@ -38,7 +39,9 @@ def usage():
     print "-b -- specify mapping base note. Valid notes: C, C# .. B. Valid octaves: -1 .. 9"
     sys.exit(-1)
 
+prof_mode = False # profiling
 prog_mode = False
+base_note = 'C1'
 base_note_num = 24
 
 # params handling
@@ -57,18 +60,22 @@ while len(params) > 0:
             usage()
     elif p == '-p':
         prog_mode = True
+    elif p == '-prof':
+        prof_mode = True
     else:
         usage()
 # end params handling
 
-if prog_mode:
-    print "Program mode..."
+def main():
+    print "PERF=%d PROG=%d PROFILE=%d BASE_NOTE=%s" % (not prog_mode, prog_mode, prof_mode, base_note)
+    h = cm.open()
+
+    for e in ps3events(prog_mode=prog_mode):
+        me = event_to_midi(e, base_note_num=base_note_num)
+        if me:
+            cm.midi_send(h, [me])
+
+if prof_mode:
+    cProfile.run('main()')
 else:
-    print "Performance mode..."
-
-h = cm.open()
-
-for e in ps3events(prog_mode=prog_mode):
-    me = event_to_midi(e, base_note_num=base_note_num)
-    if me:
-        cm.midi_send(h, [me])
+    main()
