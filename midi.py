@@ -76,4 +76,6 @@ def midi_note_num(note):
 
     assert norm_note in _OCTAVE_MAP, "'%s' is not a valid note" % norm_note
     _assert_range(octave, -1, 9)
-    return 12 + 12 * octave + _OCTAVE_MAP[norm_note]
+    n = 12 + 12 * octave + _OCTAVE_MAP[norm_note]
+    _assert_range(n, 0, 127) # safety sake
+    return n
