@@ -123,8 +123,13 @@ hid.hid_close.argtypes = [c_void_p]
 hid.hid_read.argtypes = [c_void_p, c_void_p, c_int]
 hid.hid_read.restype = c_int
 
+hid.hid_set_nonblocking.argtypes = [c_void_p, c_int]
+hid.hid_set_nonblocking.restype = c_int
+
 def open():
-    return hid.hid_open(0x54c, 0x0268, 0);
+    h = hid.hid_open(0x54c, 0x0268, 0)
+    hid.hid_set_nonblocking(h, 1)
+    return h
 
 def close(h):
     hid.hid_close(h)
