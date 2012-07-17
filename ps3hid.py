@@ -78,14 +78,14 @@ class PS3State(Structure):
         button_states = self.__getattribute__("button_states")
         return [int(d) for d in ''.join([bin(256+byte)[3:] for byte in button_states])]
 
-    def _button_pressure(self, button):
+    def _button_pressure(self, button, def_vel):
         fname = '%s_pressure' % button
         try:
             return self.__getattribute__(fname)
         except:
-            return 0
+            return def_vel
 
-    def diff(self, other, min_v_delta=1):
+    def diff(self, other, def_vel=120, min_v_delta=1):
         for f in self._fields_:
             fname = f[0]
             # buttons and related pressures special based below
@@ -94,7 +94,7 @@ class PS3State(Structure):
 
             v = self.__getattribute__(fname)
             vp = other.__getattribute__(fname)
-            if isinstance(v, int):
+            if isinstance(v, int): # 0-255 parameters (e.g., one analog stick axis)
                 if abs(v - vp) >= min_v_delta:
                     yield (fname, (0, v), (0, vp))
             else:
@@ -109,8 +109,8 @@ class PS3State(Structure):
         for (button, b, bp) in izip(self.BUTTON_STATE_BITS, bs, bps):
             if not button:
                 continue
-            p = self._button_pressure(button)
-            pp = other._button_pressure(button)
+            p = self._button_pressure(button, def_vel)
+            pp = other._button_pressure(button, def_vel)
             if b != bp or p != pp:
                 yield (button, (b, p), (bp, pp))
 
