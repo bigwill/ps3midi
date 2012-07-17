@@ -17,20 +17,23 @@ BUTTON_OFFSET = dict(izip(BUTTON_EVENT_NAMES.iterkeys(), (n for n in xrange(0, l
 ANALOG_CN = dict(izip(JOYSTICK_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(JOYSTICK_EVENT_NAMES)))))
 
 def event_to_midi(e, base_note_num=24):
-    event_note = base_note_num + BUTTON_OFFSET.get(e[0], -1)
-    cn = ANALOG_CN.get(e[0], -1)
-    (was_on, prev_pressure) = e[1]
-    (is_on, cur_pressure) = e[2]
+    ename = e[0]
+    if ename in BUTTON_OFFSET:
+        event_note = base_note_num + BUTTON_OFFSET[ename]
+        (was_on, prev_pressure) = e[1]
+        (is_on, cur_pressure) = e[2]
 
-    if event_note >= 0:
         if is_on and not was_on:
             return m.note_on(0, event_note, scale(cur_pressure))
         elif was_on and not is_on:
             return m.note_off(0, event_note, scale(prev_pressure))
         else:
             return m.note_aftertouch(0, event_note, scale(cur_pressure))
-    elif cn >= 0:
-        return m.control_change(0, cn, scale(cur_pressure))
+    elif ename in ANALOG_CN:
+        (blank, ctrl_val) = e[2]
+        return m.control_change(0, ANALOG_CN[ename], scale(ctrl_val))
+    else:
+        return None
 
 def usage():
     print '%s [-p]' % sys.argv[0]
