@@ -85,7 +85,7 @@ class PS3State(Structure):
         except:
             return 0
 
-    def diff(self, other):
+    def diff(self, other, min_v_delta=1):
         for f in self._fields_:
             fname = f[0]
             # buttons and related pressures special based below
@@ -95,7 +95,7 @@ class PS3State(Structure):
             v = self.__getattribute__(fname)
             vp = other.__getattribute__(fname)
             if isinstance(v, int):
-                if v != vp:
+                if abs(v - vp) >= min_v_delta:
                     yield (fname, (0, v), (0, vp))
             else:
             # just ignore non-int values for now (just accelerator data at the moment)

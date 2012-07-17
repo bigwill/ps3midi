@@ -6,7 +6,7 @@ from time import sleep
 BUTTON_EVENT_NAMES = OrderedDict([(b,True) for b in ps3hid.PS3State.BUTTONS if b])
 JOYSTICK_EVENT_NAMES = OrderedDict([(f[0],True) for f in ps3hid.PS3State._fields_ if (f[0].find('analog') != -1)])
 
-def ps3events(freq=1000, diag=False):
+def ps3events(freq=1000, diag=False, prog_mode=False):
     h = ps3hid.open()
     period = float(1) / freq
 
@@ -20,7 +20,7 @@ def ps3events(freq=1000, diag=False):
                 sp.dump()
                 print
             if s:
-                for d in s.diff(sp):
+                for d in s.diff(sp, min_v_delta=5 if prog_mode else 1):
                     yield d
             s = sp
             sleep(period)
