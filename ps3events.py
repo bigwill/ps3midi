@@ -23,6 +23,8 @@ def ps3events(freq=1000, def_vel=120, diag=False, prog_mode=False):
                 for d in s.diff(sp, def_vel=def_vel, min_v_delta=5 if prog_mode else 1):
                     yield d
             s = sp
-            sleep(period)
+            # no sleep for now (optimizing for now)
+#            yield ('diff_end', None, None)
+#            sleep(period)
     finally:
         ps3hid.close(h)
