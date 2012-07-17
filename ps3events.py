@@ -1,6 +1,10 @@
 import ps3hid
 
+from collections import OrderedDict
 from time import sleep
+
+BUTTON_EVENT_NAMES = OrderedDict([(b,True) for b in ps3hid.PS3State.BUTTONS if b])
+JOYSTICK_EVENT_NAMES = OrderedDict([(f[0],True) for f in ps3hid.PS3State._fields_ if (f[0].find('analog') != -1)])
 
 def ps3events(freq=1000, diag=False):
     h = ps3hid.open()
