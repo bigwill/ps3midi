@@ -134,15 +134,11 @@ def open():
 def close(h):
     hid.hid_close(h)
 
-req_state_buf = create_string_buffer('\x01\x81', 17)
-REQ_STATE_BUF_SIZE = sizeof(req_state_buf)
 PS3_STATE_SIZE = sizeof(PS3State)
-
-def read(h):
-    s = PS3State()
-    r = hid.hid_read(h, cast(byref(s), c_char_p), PS3_STATE_SIZE)
+def read(h, buf_ref):
+    r = hid.hid_read(h, buf_ref, PS3_STATE_SIZE)
     if r > 0:
         assert r == PS3_STATE_SIZE, 'Received payload of unexpected size: %d' % r
-        return s
+        return buf_ref
     else:
         return None
