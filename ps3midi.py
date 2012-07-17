@@ -13,12 +13,12 @@ from ps3events import BUTTON_EVENT_NAMES, JOYSTICK_EVENT_NAMES, ps3events
 def scale(v):
     return v/2
 
-button_offset = dict(izip(BUTTON_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(BUTTON_EVENT_NAMES)))))
-analog_cn = dict(izip(JOYSTICK_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(JOYSTICK_EVENT_NAMES)))))
+BUTTON_OFFSET = dict(izip(BUTTON_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(BUTTON_EVENT_NAMES)))))
+ANALOG_CN = dict(izip(JOYSTICK_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(JOYSTICK_EVENT_NAMES)))))
 
-def event_to_midi(e, base_note_num=m.midi_note_num('C1')):
-    event_note = base_note_num + button_offset.get(e[0], -1)
-    cn = analog_cn.get(e[0], -1)
+def event_to_midi(e, base_note_num=24):
+    event_note = base_note_num + BUTTON_OFFSET.get(e[0], -1)
+    cn = ANALOG_CN.get(e[0], -1)
     (was_on, prev_pressure) = e[1]
     (is_on, cur_pressure) = e[2]
 
