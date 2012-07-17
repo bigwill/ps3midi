@@ -40,6 +40,7 @@ def usage():
     print
     print "-p -- enables 'program mode', reducing analog sensitivity for easier MIDI mapping"
     print "-b -- specify mapping base note. Valid notes: C, C# .. B. Valid octaves: -1 .. 9"
+    print "-prof -- analyze performance"
     sys.exit(-1)
 
 prof_mode = False # profiling
