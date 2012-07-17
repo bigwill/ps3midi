@@ -12,11 +12,11 @@ from ps3events import BUTTON_EVENT_NAMES, JOYSTICK_EVENT_NAMES, ps3events
 def scale(v):
     return v/2
 
-button_note = dict(izip(BUTTON_EVENT_NAMES.iterkeys(), (n for n in xrange(24, 24+len(BUTTON_EVENT_NAMES)))))
+button_offset = dict(izip(BUTTON_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(BUTTON_EVENT_NAMES)))))
 analog_cn = dict(izip(JOYSTICK_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(JOYSTICK_EVENT_NAMES)))))
 
-def event_to_midi(e):
-    event_note = button_note.get(e[0], -1)
+def event_to_midi(e, base_note_num=m.midi_note_num('C1')):
+    event_note = base_note_num + button_offset.get(e[0], -1)
     cn = analog_cn.get(e[0], -1)
     (was_on, prev_pressure) = e[1]
     (is_on, cur_pressure) = e[2]
@@ -35,14 +35,31 @@ def usage():
     print '%s [-p]' % sys.argv[0]
     print
     print "-p -- enables 'program mode', reducing analog sensitivity for easier MIDI mapping"
+    print "-b -- specify mapping base note. Valid notes: C, C# .. B. Valid octaves: -1 .. 9"
     sys.exit(-1)
 
 prog_mode = False
-for p in sys.argv[1:]:
-    if p == '-p':
+base_note_num = 24
+
+# params handling
+params = sys.argv[1:]
+params.reverse()
+
+while len(params) > 0:
+    p = params.pop()
+    if p == '-b':
+        try:
+            base_note = params.pop()
+            base_note_num = m.midi_note_num(base_note)
+        except:
+            print "Invalid base note '%s'" % base_note
+            print
+            usage()
+    elif p == '-p':
         prog_mode = True
     else:
         usage()
+# end params handling
 
 if prog_mode:
     print "Program mode..."
@@ -52,6 +69,6 @@ else:
 h = cm.open()
 
 for e in ps3events(prog_mode=prog_mode):
-    me = event_to_midi(e)
+    me = event_to_midi(e, base_note_num=base_note_num)
     if me:
         cm.midi_send(h, [me])
