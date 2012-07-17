@@ -123,9 +123,6 @@ hid.hid_close.argtypes = [c_void_p]
 hid.hid_read.argtypes = [c_void_p, c_void_p, c_int]
 hid.hid_read.restype = c_int
 
-hid.hid_write.argtypes = [c_void_p, c_void_p, c_int]
-hid.hid_write.restype = c_int
-
 def open():
     return hid.hid_open(0x54c, 0x0268, 0);
 
@@ -133,15 +130,14 @@ def close(h):
     hid.hid_close(h)
 
 req_state_buf = create_string_buffer('\x01\x81', 17)
-def read(h):
-    r = hid.hid_write(h, req_state_buf, sizeof(req_state_buf))
-    if r < 0:
-        return None
+REQ_STATE_BUF_SIZE = sizeof(req_state_buf)
+PS3_STATE_SIZE = sizeof(PS3State)
 
+def read(h):
     s = PS3State()
-    r = hid.hid_read(h, cast(byref(s), c_char_p), sizeof(PS3State))
+    r = hid.hid_read(h, cast(byref(s), c_char_p), PS3_STATE_SIZE)
     if r > 0:
-        assert r == sizeof(PS3State), 'Received payload of unexpected size: %d' % r
+        assert r == PS3_STATE_SIZE, 'Received payload of unexpected size: %d' % r
         return s
     else:
         return None
