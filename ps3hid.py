@@ -122,8 +122,8 @@ hid.hid_open.restype = c_void_p
 
 hid.hid_close.argtypes = [c_void_p]
 
-hid.hid_read.argtypes = [c_void_p, c_void_p, c_int]
-hid.hid_read.restype = c_int
+hid.hid_read_timeout.argtypes = [c_void_p, c_void_p, c_int, c_int]
+hid.hid_read_timeout.restype = c_int
 
 hid.hid_set_nonblocking.argtypes = [c_void_p, c_int]
 hid.hid_set_nonblocking.restype = c_int
@@ -140,7 +140,7 @@ def close(h):
 
 PS3_STATE_SIZE = sizeof(PS3State)
 def read(h, buf_ref):
-    r = hid.hid_read(h, buf_ref, PS3_STATE_SIZE)
+    r = hid.hid_read_timeout(h, buf_ref, PS3_STATE_SIZE, 1)
     if r > 0:
         assert r == PS3_STATE_SIZE, 'Received payload of unexpected size: %d' % r
         return buf_ref
