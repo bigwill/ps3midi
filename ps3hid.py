@@ -7,37 +7,38 @@ libc.memcmp.argtypes = [c_void_p, c_void_p, c_int]
 libc.memcmp.restype = c_int
 
 class PS3State(Structure):
-    BUTTON_STATE_BITS = ["left",
-                         "down",
-                         "right",
-                         "up",
-                         "start",
-                         "right_hat",
-                         "left_hat",
-                         "select",
-                         "square",
-                         "ex",
-                         "circle",
-                         "triangle",
-                         "r1",
-                         "l1",
-                         "r2",
-                         "l2",
-                         None,
-                         None,
-                         None,
-                         None,
-                         None,
-                         None,
-                         None,
-                         "ps"
-                         ]
+    CONTROL_STATE_FLAGS = ["left",
+                           "down",
+                           "right",
+                           "up",
+                           "start",
+                           "right_hat",
+                           "left_hat",
+                           "select",
+                           "square",
+                           "ex",
+                           "circle",
+                           "triangle",
+                           "r1",
+                           "l1",
+                           "r2",
+                           "l2",
+                           None,
+                           None,
+                           None,
+                           None,
+                           None,
+                           None,
+                           None,
+                           "ps"
+                           ]
 
-    BUTTONS = [x for x in BUTTON_STATE_BITS if x]
+    TRIGGERS = ["l1", "r1", "l2", "r2"]
+    BUTTONS = [x for x in CONTROL_STATE_FLAGS if x and x not in TRIGGERS]
 
     _fields_ = [("hid_channel", c_ubyte),
                 ("unknown1", c_ubyte),
-                ("button_states", c_ubyte*3),
+                ("control_states", c_ubyte*3),
                 ("unknown2", c_ubyte),
                 ("left_analog_horiz", c_ubyte),
                 ("left_analog_vert", c_ubyte),
@@ -74,12 +75,12 @@ class PS3State(Structure):
                 d = ''.join('%02x' % b for b in v)
             print '%18s = %24s' % (f[0], d)
 
-    def _unpacked_button_states(self):
-        button_states = self.__getattribute__("button_states")
-        return [int(d) for d in ''.join([bin(256+byte)[3:] for byte in button_states])]
+    def _unpacked_control_states(self):
+        control_states = self.__getattribute__("control_states")
+        return [int(d) for d in ''.join([bin(256+byte)[3:] for byte in control_states])]
 
-    def _button_pressure(self, button, def_vel):
-        fname = '%s_pressure' % button
+    def _control_pressure(self, control, def_vel):
+        fname = '%s_pressure' % control
         try:
             return self.__getattribute__(fname)
         except:
@@ -88,8 +89,8 @@ class PS3State(Structure):
     def diff(self, other, def_vel=120, min_v_delta=1):
         for f in self._fields_:
             fname = f[0]
-            # buttons and related pressures special based below
-            if fname == "button_states" or fname.endswith('pressure'):
+            # controls and related pressures special based below
+            if fname == "control_states" or fname.endswith('pressure'):
                 continue
 
             v = self.__getattribute__(fname)
@@ -103,16 +104,16 @@ class PS3State(Structure):
 #            elif libc.memcmp(v, vp, sizeof(v)) != 0:
 #                yield (fname, (0, v), (0, vp))
 
-        # unpack button bits and related pressures
-        bs = self._unpacked_button_states()
-        bps = other._unpacked_button_states()
-        for (button, b, bp) in izip(self.BUTTON_STATE_BITS, bs, bps):
-            if not button:
+        # unpack control bits and related pressures
+        cs = self._unpacked_control_states()
+        cps = other._unpacked_control_states()
+        for (control, c, cp) in izip(self.CONTROL_STATE_FLAGS, cs, cps):
+            if not control:
                 continue
-            p = self._button_pressure(button, def_vel)
-            pp = other._button_pressure(button, def_vel)
-            if b != bp or p != pp:
-                yield (button, (b, p), (bp, pp))
+            p = self._control_pressure(control, def_vel)
+            pp = other._control_pressure(control, def_vel)
+            if c != cp or p != pp:
+                yield (control, (c, p), (cp, pp))
 
 hid = CDLL("libHid.A.dylib")
 
