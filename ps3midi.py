@@ -20,12 +20,13 @@ def invert(v):
     assert 0 <= v <= 127, 'v out of expected range'
     return 127-v
 
-def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[]):
+def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side=[]):
     NOTE_OFFSET = dict(izip(note, (n for n in xrange(0, len(note)))))
     ANALOG_CN = dict(izip(cc, (n for n in xrange(0, len(cc)))))
 
-    assert len(pitch) in [0, 2], 'only exactly two controls may be mapped to the pitch wheel'
+    assert (len(pitch) in [0, 2] or len(pitch_two_side) in [0, 2]) and len(pitch) != len(pitch_two_side), "only exactly two controls may be mapped to the pitch wheel"
     PITCH_WHEEL = OrderedDict(izip(pitch, [None, None]))
+    PITCH_TWO_SIDE = OrderedDict(izip(pitch_two_side, [0, 0]))
 
     def event_to_midi(e, base_note_num=24):
         mes = []
@@ -51,6 +52,11 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[]):
             [ph, pl] = PITCH_WHEEL.values()
             if ph and pl:
                 mes.append(m.pitch_wheel(0, invert(scale(ph)) * 128 + invert(scale(pl))))
+
+        if ename in PITCH_TWO_SIDE:
+            PITCH_TWO_SIDE[ename] = e[2][1]
+            [pu, pd] = PITCH_TWO_SIDE.values()
+            mes.append(m.pitch_wheel(0, int(8192 + 32.125 * (pu if pu >= pd else -pd))))
 
         return mes
 
