@@ -44,7 +44,7 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[]):
 
         if ename in ANALOG_CN:
             (blank, ctrl_val) = e[2]
-            mes.append(m.control_change(0, ANALOG_CN[ename], scale(ctrl_val)))
+            mes.append(m.control_change(0, ANALOG_CN[ename], invert(scale(ctrl_val))))
 
         if ename in PITCH_WHEEL:
             PITCH_WHEEL[ename] = e[2][1]
