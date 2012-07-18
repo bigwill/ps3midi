@@ -129,6 +129,8 @@ hid.hid_set_nonblocking.argtypes = [c_void_p, c_int]
 hid.hid_set_nonblocking.restype = c_int
 
 def open():
+    # Sony and PS3 controller USB IDs. Source:
+    # http://www.linux-usb.org/usb.ids
     h = hid.hid_open(0x54c, 0x0268, 0)
     hid.hid_set_nonblocking(h, 1)
     return h
