@@ -5,38 +5,63 @@ import coremidi as cm
 import midi as m
 import sys
 
-from collections import defaultdict
+from config import MODES
+from collections import OrderedDict
 from itertools import izip
-from ps3events import BUTTON_EVENT_NAMES, JOYSTICK_EVENT_NAMES, ps3events
+from ps3events import BUTTONS, TRIGGERS, JOYSTICKS, ps3events
 
 # convert ps3 "analog" 0-255 to midi 0-127
 def scale(v):
+    assert 0 <= v <= 255, 'v out of expected range'
     return v/2
 
-BUTTON_OFFSET = dict(izip(BUTTON_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(BUTTON_EVENT_NAMES)))))
-ANALOG_CN = dict(izip(JOYSTICK_EVENT_NAMES.iterkeys(), (n for n in xrange(0, len(JOYSTICK_EVENT_NAMES)))))
+# convert 0-127 to 127-0
+def invert(v):
+    assert 0 <= v <= 127, 'v out of expected range'
+    return 127-v
 
-def event_to_midi(e, base_note_num=24):
-    ename = e[0]
-    if ename in BUTTON_OFFSET:
-        event_note = base_note_num + BUTTON_OFFSET[ename]
-        (was_on, prev_pressure) = e[1]
-        (is_on, cur_pressure) = e[2]
+def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[]):
+    NOTE_OFFSET = dict(izip(note, (n for n in xrange(0, len(note)))))
+    ANALOG_CN = dict(izip(cc, (n for n in xrange(0, len(cc)))))
 
-        if is_on and not was_on:
-            return m.note_on(0, event_note, scale(cur_pressure))
-        elif was_on and not is_on:
-            return m.note_off(0, event_note, scale(prev_pressure))
-        else:
-            return m.note_aftertouch(0, event_note, scale(cur_pressure))
-    elif ename in ANALOG_CN:
-        (blank, ctrl_val) = e[2]
-        return m.control_change(0, ANALOG_CN[ename], scale(ctrl_val))
-    else:
-        return None
+    assert len(pitch) in [0, 2], 'only exactly two controls may be mapped to the pitch wheel'
+    PITCH_WHEEL = OrderedDict(izip(pitch, [None, None]))
+
+    def event_to_midi(e, base_note_num=24):
+        mes = []
+        ename = e[0]
+        if ename in NOTE_OFFSET:
+            event_note = base_note_num + NOTE_OFFSET[ename]
+            (was_on, prev_pressure) = e[1]
+            (is_on, cur_pressure) = e[2]
+
+            if is_on and not was_on:
+                mes.append(m.note_on(0, event_note, scale(cur_pressure)))
+            elif was_on and not is_on:
+                mes.append(m.note_off(0, event_note, scale(prev_pressure)))
+            else:
+                mes.append(m.note_aftertouch(0, event_note, scale(cur_pressure)))
+
+        if ename in ANALOG_CN:
+            (blank, ctrl_val) = e[2]
+            mes.append(m.control_change(0, ANALOG_CN[ename], scale(ctrl_val)))
+
+        if ename in PITCH_WHEEL:
+            PITCH_WHEEL[ename] = e[2][1]
+            [ph, pl] = PITCH_WHEEL.values()
+            if ph and pl:
+                mes.append(m.pitch_wheel(0, invert(scale(ph)) * 128 + invert(scale(pl))))
+
+        return mes
+
+    return event_to_midi
 
 def usage():
-    print '%s [-p]' % sys.argv[0]
+    print 'Usage: %s mode [-p]' % sys.argv[0]
+    print
+    print "Valid modes:"
+    for m in modes:
+        print '  %s' % m
     print
     print "-p -- enables 'program mode', reducing analog sensitivity for easier MIDI mapping"
     print "-b -- specify mapping base note. Valid notes: C, C# .. B. Valid octaves: -1 .. 9"
@@ -49,7 +74,15 @@ base_note = 'C1'
 base_note_num = 24
 
 # params handling
-params = sys.argv[1:]
+mode = sys.argv[1]
+if mode in MODES:
+    event_to_midi = build_mapper(**MODES[mode])
+else:
+    print "Invalid mode '%s'" % mode
+    print
+    usage()
+
+params = sys.argv[2:]
 params.reverse()
 
 while len(params) > 0:
@@ -75,9 +108,9 @@ def main():
     h = cm.open()
 
     for e in ps3events(prog_mode=prog_mode):
-        me = event_to_midi(e, base_note_num=base_note_num)
-        if me:
-            cm.midi_send(h, [me])
+        mes = event_to_midi(e, base_note_num=base_note_num)
+        if mes:
+            cm.midi_send(h, mes)
 
 if prof_mode:
     cProfile.run('main()')

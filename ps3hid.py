@@ -33,9 +33,6 @@ class PS3State(Structure):
                            "ps"
                            ]
 
-    TRIGGERS = ["l1", "r1", "l2", "r2"]
-    BUTTONS = [x for x in CONTROL_STATE_FLAGS if x and x not in TRIGGERS]
-
     _fields_ = [("hid_channel", c_ubyte),
                 ("unknown1", c_ubyte),
                 ("control_states", c_ubyte*3),
@@ -114,6 +111,10 @@ class PS3State(Structure):
             pp = other._control_pressure(control, def_vel)
             if c != cp or p != pp:
                 yield (control, (c, p), (cp, pp))
+
+TRIGGERS = ["l1", "r1", "l2", "r2"]
+BUTTONS = [x for x in PS3State.CONTROL_STATE_FLAGS if x and x not in TRIGGERS]
+JOYSTICKS = [f[0] for f in PS3State._fields_ if f[0].find('analog') != -1]
 
 hid = CDLL("libHid.A.dylib")
 
