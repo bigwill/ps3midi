@@ -71,6 +71,7 @@ def usage():
     print
     print "-p -- enables 'program mode', reducing analog sensitivity for easier MIDI mapping"
     print "-b -- specify mapping base note. Valid notes: C, C# .. B. Valid octaves: -1 .. 9"
+    print "-s -- Spy mode. Watch the ps3events stream"
     print "-prof -- analyze performance"
     sys.exit(-1)
 
@@ -78,6 +79,7 @@ prof_mode = False # profiling
 prog_mode = False
 base_note = 'C1'
 base_note_num = 24
+spy = False
 
 # params handling
 mode = sys.argv[1]
@@ -105,6 +107,8 @@ while len(params) > 0:
         prog_mode = True
     elif p == '-prof':
         prof_mode = True
+    elif p == '-s':
+        spy = True
     else:
         print "Unknown parameters '%s'" % p
         print
@@ -116,6 +120,8 @@ def main():
     h = cm.open()
 
     for e in ps3events(prog_mode=prog_mode):
+        if spy:
+            print e
         mes = event_to_midi(e, base_note_num=base_note_num)
         if mes:
             cm.midi_send(h, mes)
