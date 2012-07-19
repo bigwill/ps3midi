@@ -66,7 +66,7 @@ def usage():
     print 'Usage: %s mode [-p]' % sys.argv[0]
     print
     print "Valid modes:"
-    for m in modes:
+    for m in MODES:
         print '  %s' % m
     print
     print "-p -- enables 'program mode', reducing analog sensitivity for easier MIDI mapping"
@@ -106,6 +106,8 @@ while len(params) > 0:
     elif p == '-prof':
         prof_mode = True
     else:
+        print "Unknown parameters '%s'" % p
+        print
         usage()
 # end params handling
 
