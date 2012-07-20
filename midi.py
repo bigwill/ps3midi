@@ -1,6 +1,8 @@
 import struct
 
 TYPES = (128, 144, 160, 176)
+SPY = False
+
 def _assert_valid_type(type):
     if type in TYPES:
         return
@@ -20,15 +22,23 @@ def _kv_base(type, chan, k, v):
 
 # MIDI message formatters
 def note_off(chan, note, vel):
+    if SPY:
+        print 'note_off(%d, %d, %d)' % (chan, note, vel)
     return _kv_base(128, chan, note, vel)
 
 def note_on(chan, note, vel):
+    if SPY:
+        print 'note_on(%d, %d, %d)' % (chan, note, vel)
     return _kv_base(144, chan, note, vel)
 
 def note_aftertouch(chan, note, pressure):
+    if SPY:
+        print 'note_aftertouch(%d, %d, %d)' % (chan, note, pressure)
     return _kv_base(160, chan, note, pressure)
 
 def control_change(chan, ctlr, val):
+    if SPY:
+        print 'cc(%d, %d, %d)' % (chan, ctlr, val)
     return _kv_base(176, chan, ctlr, val)
 
 def prog_change(chan, prog):

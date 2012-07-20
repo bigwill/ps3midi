@@ -33,6 +33,7 @@ class PS3State(Structure):
                            "ps"
                            ]
 
+    _pack_ = 1
     _fields_ = [("hid_channel", c_ubyte),
                 ("unknown1", c_ubyte),
                 ("control_states", c_ubyte*3),
@@ -59,7 +60,9 @@ class PS3State(Structure):
                 ("power_rating", c_ubyte),
                 ("status2", c_ubyte),
                 ("unknown4", c_ubyte*9),
-                ("accelerator", c_ubyte*6),
+                ("accX", c_ushort),
+                ("accY", c_ushort),
+                ("accZ", c_ushort),
                 ("z_gyro", c_ubyte*2),
                 ]
 
@@ -95,11 +98,6 @@ class PS3State(Structure):
             if isinstance(v, int): # 0-255 parameters (e.g., one analog stick axis)
                 if abs(v - vp) >= min_v_delta:
                     yield (fname, (0, v), (0, vp))
-            else:
-            # just ignore non-int values for now (just accelerator data at the moment)
-                continue
-#            elif libc.memcmp(v, vp, sizeof(v)) != 0:
-#                yield (fname, (0, v), (0, vp))
 
         # unpack control bits and related pressures
         cs = self._unpacked_control_states()

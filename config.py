@@ -24,6 +24,9 @@ MODES = {
             "left_analog_vert",
             "right_analog_horiz",
             "right_analog_vert",
+            "accX",
+            "accY",
+            "accZ",
             ],
         "pitch": [
             ],
@@ -51,6 +54,9 @@ MODES = {
         "cc" : [
             "left_analog_horiz",
             "left_analog_vert",
+            "accX",
+            "accY",
+            "accZ",
             ],
         "pitch": [
             "right_analog_horiz",
@@ -80,6 +86,9 @@ MODES = {
             "left_analog_vert",
             "right_analog_horiz",
             "right_analog_vert",
+            "accX",
+            "accY",
+            "accZ",
             ],
         "pitch_two_side": [
             "r1",

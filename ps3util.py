@@ -18,7 +18,7 @@ freq = 2 if diag else 1000
 
 for e in ps3events(freq=freq, diag=diag):
     fname = e[0]
-    if quiet and (fname  == 'accelerator' or fname.find("analog") != -1):
+    if quiet and (fname.startswith('acc') or fname.find("analog") != -1):
         continue
     print e
 
