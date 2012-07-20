@@ -51,7 +51,7 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side
             a = A[ename]
             ap = A[ename] = lpf(a, e[2][1])
             # modify event acc event with filtering & MIDI scale
-            e = (e[0], (e[1][0], scaleShort(a)), (e[2][0], scaleShort(ap)))
+            e = (e[0], (e[1][0], scaleShort(int(a))), (e[2][0], scaleShort(int(ap))))
         else:
             # normal event pressure/control value for MIDI scale
             e = (e[0], (e[1][0], scaleChar(e[1][1])), (e[2][0], scaleChar(e[2][1])))
