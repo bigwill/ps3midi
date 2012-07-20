@@ -88,6 +88,8 @@ MODES = {
         "cc" : {
             "left_analog_horiz" : 65,
             "left_analog_vert" : 66,
+            "right_analog_horiz" : 67,
+            "right_analog_vert" : 68,
             "accX" : 69,
             "accY" : 70,
             "accZ" : 71,
