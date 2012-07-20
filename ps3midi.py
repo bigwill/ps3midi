@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import cProfile
+import config
 import coremidi as cm
 import midi as m
 import sys
 
-from config import MODES
 from collections import OrderedDict
 from itertools import izip
 from ps3events import BUTTONS, TRIGGERS, JOYSTICKS, ps3events
@@ -33,7 +33,7 @@ FILTER_C = 0.1
 def lpf(a, ap):
     return ap * FILTER_C + a * (1-FILTER_C)
 
-def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side=[]):
+def build_mapper(channel=0, note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side=[]):
     assert (len(pitch) in [0, 2] or len(pitch_two_side) in [0, 2]) and len(pitch) != len(pitch_two_side) or (not pitch_two_side and not pitch), "only exactly two controls may be mapped to the pitch wheel"
     PITCH_WHEEL = OrderedDict(izip(pitch, [None, None]))
     PITCH_TWO_SIDE = OrderedDict(izip(pitch_two_side, [0, 0]))
@@ -62,26 +62,26 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side
             (is_on, cur_pressure) = e[2]
 
             if is_on and not was_on:
-                mes.append(m.note_on(0, event_note, cur_pressure))
+                mes.append(m.note_on(channel, event_note, cur_pressure))
             elif was_on and not is_on:
-                mes.append(m.note_off(0, event_note, prev_pressure))
+                mes.append(m.note_off(channel, event_note, prev_pressure))
             else:
-                mes.append(m.note_aftertouch(0, event_note, cur_pressure))
+                mes.append(m.note_aftertouch(channel, event_note, cur_pressure))
 
         if ename in cc:
             (blank, ctrl_val) = e[2]
-            mes.append(m.control_change(0, cc[ename], invert(ctrl_val)))
+            mes.append(m.control_change(channel, cc[ename], invert(ctrl_val)))
 
         if ename in PITCH_WHEEL:
             PITCH_WHEEL[ename] = e[2][1]
             [ph, pl] = PITCH_WHEEL.values()
             if ph and pl:
-                mes.append(m.pitch_wheel(0, invert(ph) * 128 + invert(pl)))
+                mes.append(m.pitch_wheel(channel, invert(ph) * 128 + invert(pl)))
 
         if ename in PITCH_TWO_SIDE:
             PITCH_TWO_SIDE[ename] = e[2][1]
             [pu, pd] = PITCH_TWO_SIDE.values()
-            mes.append(m.pitch_wheel(0, int(8192 + 32.125 * (pu if pu >= pd else -pd))))
+            mes.append(m.pitch_wheel(channel, int(8192 + 32.125 * (pu if pu >= pd else -pd))))
 
         return (mes, A)
 
@@ -110,14 +110,12 @@ base_note_num = 24
 ps3_spy = False
 acc_spy = False
 
+mode_mappers = OrderedDict([(k, build_mapper(**v)) for (k, v) in config.MODES.items()])
+modes = mode_mappers.keys()
+
 # params handling
 mode = sys.argv[1]
-if mode in MODES:
-    event_to_midi = build_mapper(**MODES[mode])
-else:
-    print "Invalid mode '%s'" % mode
-    print
-    usage(True)
+assert mode in config.MODES, "Mode '%s' not found in config" % mode
 
 params = sys.argv[2:]
 params.reverse()
@@ -149,7 +147,7 @@ while len(params) > 0:
         usage(True)
 # end params handling
 
-def main():
+def main(mode):
     print "PERF=%d PROG=%d PROFILE=%d BASE_NOTE=%s BASE_NOTE_NUM=%d" % (not prog_mode, prog_mode, prof_mode, base_note, base_note_num)
     h = cm.open()
     A = {"accX" : 32768,
@@ -162,13 +160,18 @@ def main():
     for e in ps3events():
         if ps3_spy:
             print e
-        (mes, A) = event_to_midi(e, A, base_note_num=base_note_num)
+
+        if e[0] == 'select' and (not e[1][0] and e[2][0]):
+            mode = mode_mappers.keys()[(modes.index(mode) + 1) % len(modes)]
+            print "Mode changed to:", mode
+
+        (mes, A) = mode_mappers[mode](e, A, base_note_num=base_note_num)
         if acc_spy and e[0].startswith('acc'):
             print '%d:%d' % (Ai[e[0]], A[e[0]])
         if mes:
             cm.midi_send(h, mes)
 
 if prof_mode:
-    cProfile.run('main()')
+    cProfile.run('main(mode)')
 else:
-    main()
+    main(mode)

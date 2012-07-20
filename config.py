@@ -1,7 +1,8 @@
 MODES = {
  "normal":
      {
-	"note" : {
+        "channel" : 0,
+        "note" : {
             "square" : 0,
             "ex" : 2,
             "circle" : 4,
@@ -17,7 +18,6 @@ MODES = {
             "start" : 65,
             "right_hat" : 66,
             "left_hat" : 67,
-            "select" : 68,
             },
         "cc" : {
             "left_analog_horiz" : 65,
@@ -35,7 +35,8 @@ MODES = {
         },
  "pitch":
      {
-	"note" : {
+        "channel" : 1,
+        "note" : {
             "square" : 0,
             "ex" : 2,
             "circle" : 4,
@@ -51,7 +52,6 @@ MODES = {
             "start" : 40,
             "right_hat" : 42,
             "left_hat" : 43,
-            "select" : 41,
             },
         "cc" : {
             "left_analog_horiz" : 65,
@@ -69,7 +69,8 @@ MODES = {
         },
  "pitch2":
      {
-	"note" : {
+        "channel" : 2,
+        "note" : {
             "square" : 0,
             "ex" : 2,
             "circle" : 4,
@@ -83,7 +84,6 @@ MODES = {
             "start" : 65,
             "right_hat" : 66,
             "left_hat" : 67,
-            "select" : 68,
             },
         "cc" : {
             "left_analog_horiz" : 65,
