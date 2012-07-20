@@ -12,17 +12,21 @@ from ps3events import BUTTONS, TRIGGERS, JOYSTICKS, ps3events
 
 # convert ps3 "analog" 0-255 to midi 0-127
 def scaleChar(v):
-    assert 0 <= v <= 255, 'v out of expected range'
-    return v/2
+    assert 0 <= v <= 255, 'v (%d) out of expected range' % v
+    r = v/2
+    assert 0 <= r <= 127, 'result (%d) out of expected range' % r
+    return r
 
 # convert ps3 "analog" 0-65536 to midi 0-127
 def scaleShort(v):
-    assert 0 <= v <= 65535, 'v out of expected range'
-    return v/512
+    assert 0 <= v <= 65535, 'v (%d) out of expected range' % v
+    r = v/512
+    assert 0 <= r <= 127, 'result (%d) out of expected range' % r
+    return r
 
 # convert 0-127 to 127-0
 def invert(v):
-    assert 0 <= v <= 127, 'v out of expected range'
+    assert 0 <= v <= 127, 'v (%d) out of expected range' % v
     return 127-v
 
 FILTER_C = 0.1
