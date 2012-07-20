@@ -5,7 +5,7 @@ from ps3hid import BUTTONS, JOYSTICKS, TRIGGERS
 from time import sleep
 
 
-def ps3events(def_vel=120, diag=False, prog_mode=False):
+def ps3events(def_vel=120, diag=False):
     h = ps3hid.open()
 
     try:
@@ -28,7 +28,7 @@ def ps3events(def_vel=120, diag=False, prog_mode=False):
             if diag:
                 sp.dump()
                 print
-            for d in s.diff(sp, def_vel=def_vel, min_v_delta=5 if prog_mode else 1):
+            for d in s.diff(sp, def_vel=def_vel):
                 yield d
             (s, cr, sp, crp) = (sp, crp, s, cr)
     finally:

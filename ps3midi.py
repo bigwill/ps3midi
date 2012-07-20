@@ -56,6 +56,9 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side
             # normal event pressure/control value for MIDI scale
             e = (e[0], (e[1][0], scaleChar(e[1][1])), (e[2][0], scaleChar(e[2][1])))
 
+        if prog_mode and abs(e[1][1] - e[2][1]) < 10:
+            return (mes, A)
+
         if ename in NOTE_OFFSET:
             event_note = base_note_num + NOTE_OFFSET[ename]
             (was_on, prev_pressure) = e[1]
@@ -150,7 +153,7 @@ def main():
          "accY" : 32768,
          "accZ" : 32768}
 
-    for e in ps3events(prog_mode=prog_mode):
+    for e in ps3events():
         if ps3spy:
             print e
         (mes, A) = event_to_midi(e, A, base_note_num=base_note_num)

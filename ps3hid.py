@@ -86,7 +86,7 @@ class PS3State(Structure):
         except:
             return def_vel
 
-    def diff(self, other, def_vel=120, min_v_delta=1):
+    def diff(self, other, def_vel=120):
         for f in self._fields_:
             fname = f[0]
             # controls and related pressures special based below
@@ -96,8 +96,7 @@ class PS3State(Structure):
             v = self.__getattribute__(fname)
             vp = other.__getattribute__(fname)
             if isinstance(v, int): # 0-255 parameters (e.g., one analog stick axis)
-                if abs(v - vp) >= min_v_delta:
-                    yield (fname, (0, v), (0, vp))
+                yield (fname, (0, v), (0, vp))
 
         # unpack control bits and related pressures
         cs = self._unpacked_control_states()
