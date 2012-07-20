@@ -89,7 +89,7 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side
 
     return event_to_midi
 
-def usage():
+def usage(exit):
     print 'Usage: %s mode [-p]' % sys.argv[0]
     print
     print "Valid modes:"
@@ -102,7 +102,8 @@ def usage():
     print "-midispy - Spy mode for MIDI event stream"
     print "-accspy  - Spy mode for filtered accelerometer data"
     print "-prof    - analyze performance"
-    sys.exit(-1)
+    if exit:
+        sys.exit(-1)
 
 prof_mode = False # profiling
 prog_mode = False
@@ -118,7 +119,7 @@ if mode in MODES:
 else:
     print "Invalid mode '%s'" % mode
     print
-    usage()
+    usage(True)
 
 params = sys.argv[2:]
 params.reverse()
@@ -129,10 +130,11 @@ while len(params) > 0:
         try:
             base_note = params.pop()
             base_note_num = m.midi_note_num(base_note)
-        except:
+        except Exception, e:
             print "Invalid base note '%s'" % base_note
             print
-            usage()
+            usage(False)
+            raise e
     elif p == '-p':
         prog_mode = True
     elif p == '-prof':
@@ -146,11 +148,11 @@ while len(params) > 0:
     else:
         print "Unknown parameters '%s'" % p
         print
-        usage()
+        usage(True)
 # end params handling
 
 def main():
-    print "PERF=%d PROG=%d PROFILE=%d BASE_NOTE=%s" % (not prog_mode, prog_mode, prof_mode, base_note)
+    print "PERF=%d PROG=%d PROFILE=%d BASE_NOTE=%s BASE_NOTE_NUM=%d" % (not prog_mode, prog_mode, prof_mode, base_note, base_note_num)
     h = cm.open()
     A = {"accX" : 32768,
          "accY" : 32768,
