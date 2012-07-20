@@ -17,7 +17,7 @@ def scaleChar(v):
     assert 0 <= r <= 127, 'result (%d) out of expected range' % r
     return r
 
-# convert ps3 "analog" 0-65536 to midi 0-127
+# convert ps3 "analog" 0-65535 to midi 0-127
 def scaleShort(v):
     assert 0 <= v <= 65535, 'v (%d) out of expected range' % v
     r = v/512
