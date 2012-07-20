@@ -6,8 +6,8 @@ Early cut of a project to generate MIDI messages from a PS3 controller. Currentl
 Setup
 -----
 
-# make
-# python ps3midi.py lightsaber -b A0
+    $ make
+    $ python ps3midi.py lightsaber -b A0
 
 Watch the MIDI fly
 
@@ -21,6 +21,4 @@ midi.py - format MIDI messages
 Acknowledgements
 ----------------
 
-hid.c and hidapi.h were taken from Alan Ott's hidapi repo: http://github.com/signal11/hidapi 
-
-I will work to make this work in a more sane way in the future
+hid.c and hidapi.h were taken from Alan Ott's hidapi repo: http://github.com/signal11/hidapi . I will work to make this work repo relationship more sane way in the future
