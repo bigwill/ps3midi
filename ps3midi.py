@@ -34,10 +34,9 @@ def lpf(a, ap):
     return ap * FILTER_C + a * (1-FILTER_C)
 
 def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side=[]):
-    NOTE_OFFSET = dict(izip(note, (n for n in xrange(0, len(note)))))
     ANALOG_CN = dict(izip(cc, (n for n in xrange(0, len(cc)))))
 
-    assert (len(pitch) in [0, 2] or len(pitch_two_side) in [0, 2]) and len(pitch) != len(pitch_two_side), "only exactly two controls may be mapped to the pitch wheel"
+    assert (len(pitch) in [0, 2] or len(pitch_two_side) in [0, 2]) and len(pitch) != len(pitch_two_side) or (not pitch_two_side and not pitch), "only exactly two controls may be mapped to the pitch wheel"
     PITCH_WHEEL = OrderedDict(izip(pitch, [None, None]))
     PITCH_TWO_SIDE = OrderedDict(izip(pitch_two_side, [0, 0]))
 
@@ -59,8 +58,8 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side
         if prog_mode and abs(e[1][1] - e[2][1]) < 10:
             return (mes, A)
 
-        if ename in NOTE_OFFSET:
-            event_note = base_note_num + NOTE_OFFSET[ename]
+        if ename in note:
+            event_note = base_note_num + note[ename]
             (was_on, prev_pressure) = e[1]
             (is_on, cur_pressure) = e[2]
 
