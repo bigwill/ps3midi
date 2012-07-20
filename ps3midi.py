@@ -101,6 +101,7 @@ def usage():
     print "-b       - specify mapping base note. Valid notes: C, C# .. B. Valid octaves: -1 .. 9"
     print "-ps3spy  - Spy mode for PS3 event stream"
     print "-midispy - Spy mode for MIDI event stream"
+    print "-accspy  - Spy mode for filtered accelerometer data"
     print "-prof    - analyze performance"
     sys.exit(-1)
 
@@ -108,7 +109,8 @@ prof_mode = False # profiling
 prog_mode = False
 base_note = 'C1'
 base_note_num = 24
-ps3spy = False
+ps3_spy = False
+acc_spy = False
 
 # params handling
 mode = sys.argv[1]
@@ -137,9 +139,11 @@ while len(params) > 0:
     elif p == '-prof':
         prof_mode = True
     elif p == '-ps3spy':
-        ps3spy = True
+        ps3_spy = True
     elif p == '-midispy':
         m.SPY = True
+    elif p == '-accspy':
+        acc_spy = True
     else:
         print "Unknown parameters '%s'" % p
         print
@@ -152,11 +156,16 @@ def main():
     A = {"accX" : 32768,
          "accY" : 32768,
          "accZ" : 32768}
+    Ai = {"accX" : 0,
+          "accY" : 1,
+          "accZ" : 2}
 
     for e in ps3events():
-        if ps3spy:
+        if ps3_spy:
             print e
         (mes, A) = event_to_midi(e, A, base_note_num=base_note_num)
+        if acc_spy and e[0].startswith('acc'):
+            print '%d:%d' % (Ai[e[0]], A[e[0]])
         if mes:
             cm.midi_send(h, mes)
 
