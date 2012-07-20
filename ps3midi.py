@@ -54,7 +54,7 @@ def build_mapper(note=BUTTONS + TRIGGERS, cc=JOYSTICKS, pitch=[], pitch_two_side
             e = (e[0], (e[1][0], scaleShort(a)), (e[2][0], scaleShort(ap)))
         else:
             # normal event pressure/control value for MIDI scale
-            e = (e[0], (e[1][0], scaleChar(e[1][1])), (e[2][0], scaleShort(e[2][1])))
+            e = (e[0], (e[1][0], scaleChar(e[1][1])), (e[2][0], scaleChar(e[2][1])))
 
         if ename in NOTE_OFFSET:
             event_note = base_note_num + NOTE_OFFSET[ename]
